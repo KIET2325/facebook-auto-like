@@ -8,11 +8,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 # Đọc thông tin đăng nhập từ biến môi trường
-FB_EMAIL = os.getenv('0877224335')
-FB_PASSWORD = os.getenv('minhkiet123')
+FB_EMAIL = os.getenv('FB_EMAIL')
+FB_PASSWORD = os.getenv('FB_PASSWORD')
 
 def login(driver):
-    driver.get('https://www.m.facebook.com')
+    driver.get('https://www.facebook.com')
     time.sleep(2)
     driver.find_element(By.ID, 'email').send_keys(FB_EMAIL)
     driver.find_element(By.ID, 'pass').send_keys(FB_PASSWORD)
