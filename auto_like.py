@@ -1,9 +1,10 @@
 import os
-from dotenv import load_dotenv
-load_dotenv()
-
 import time
 from datetime import datetime, timedelta
+
+# THÊM 2 DÒNG NÀY để load biến từ file .env
+from dotenv import load_dotenv
+load_dotenv()
 
 import schedule
 from selenium import webdriver
@@ -13,6 +14,12 @@ from selenium.webdriver.common.keys import Keys
 # Đọc thông tin đăng nhập từ biến môi trường
 FB_EMAIL = os.getenv('FB_EMAIL')
 FB_PASSWORD = os.getenv('FB_PASSWORD')
+
+# Kiểm tra xem biến môi trường đã load chưa
+if not FB_EMAIL or not FB_PASSWORD:
+    print("❌ Thiếu biến môi trường: FB_EMAIL hoặc FB_PASSWORD")
+    exit()
+
 
 def login(driver):
     driver.get('https://www.facebook.com')
