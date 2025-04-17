@@ -1,9 +1,9 @@
 import os
 import time
 from datetime import datetime, timedelta
-
-# THÊM 2 DÒNG NÀY để load biến từ file .env
 from dotenv import load_dotenv
+
+# Tải biến từ file .env
 load_dotenv()
 
 import schedule
@@ -15,67 +15,53 @@ from selenium.webdriver.common.keys import Keys
 FB_EMAIL = os.getenv('FB_EMAIL')
 FB_PASSWORD = os.getenv('FB_PASSWORD')
 
-# Kiểm tra xem biến môi trường đã load chưa
+# Kiểm tra biến môi trường
 if not FB_EMAIL or not FB_PASSWORD:
     print("❌ Thiếu biến môi trường: FB_EMAIL hoặc FB_PASSWORD")
     exit()
 
-
 def login(driver):
-    driver.get('https://www.facebook.com')
+    driver.get("https://www.facebook.com")
     time.sleep(2)
-    driver.find_element(By.ID, 'email').send_keys(FB_EMAIL)
-    driver.find_element(By.ID, 'pass').send_keys(FB_PASSWORD)
-    driver.find_element(By.NAME, 'login').click()
-    time.sleep(5)
+
+    email_input = driver.find_element(By.ID, 'email')
+    pass_input = driver.find_element(By.ID, 'pass')
+    login_btn = driver.find_element(By.NAME, 'login')
+
+    email_input.send_keys(FB_EMAIL)
+    pass_input.send_keys(FB_PASSWORD)
+    login_btn.click()
+
+    time.sleep(5)  # Chờ trang tải xong sau khi đăng nhập
 
 def auto_like():
-    # Khởi tạo headless Chrome
+    # Mở trình duyệt ở chế độ hiển thị (có thể đổi sang headless nếu muốn)
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--window-size=1920,1080')
-
     driver = webdriver.Chrome(options=options)
-    login(driver)
 
-    start_time = datetime.now()
-    end_time = start_time + timedelta(hours=2)
+    try:
+        login(driver)
 
-    while datetime.now() < end_time:
-        posts = driver.find_elements(By.XPATH, "//div[@role='article']")
-        for post in posts:
-            try:
-                if 'Bạn bè' in post.text:
-                    btn = post.find_elements(By.XPATH, ".//div[@aria-label='Thích']")
-                    if btn:
-                        btn[0].click()
-                        print(f"[{datetime.now()}] Đã like bài viết của bạn bè.")
-                        time.sleep(10)
-            except Exception as e:
-                print("Lỗi khi like:", e)
-        # Load thêm bài
-        driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.PAGE_DOWN)
-        time.sleep(3)
+        # 👉 TODO: Thêm URL bài viết hoặc newsfeed bạn muốn tự động like
+        driver.get("https://www.facebook.com/YOUR_TARGET_PAGE_OR_POST")
+        time.sleep(5)
 
-    driver.quit()
+        # 👉 Tìm nút "Like" và click (bạn cần cập nhật chính xác selector tuỳ theo nội dung)
+        like_buttons = driver.find_elements(By.XPATH, "//div[@aria-label='Thích' or @aria-label='Like']")
+        if like_buttons:
+            like_buttons[0].click()
+            print("✅ Đã like bài viết.")
+        else:
+            print("⚠️ Không tìm thấy nút Like.")
 
-# Lên lịch chạy 1 lần mỗi ngày lúc 20:00 (cron sẽ trigger Actions)
-# schedule.every().day.at("20:00").do(auto_like)
+    except Exception as e:
+        print("❌ Lỗi:", e)
+    finally:
+        driver.quit()
 
-# Test chạy luôn không cần chờ
-auto_like()
+# Lên lịch chạy mỗi ngày lúc 8:00 sáng
+# schedule.every().day.at("08:00").do(auto_like)
 
-# if __name__ == '__main__':
-#     print("Đang chờ schedule chạy...")
-#     while True:
-#         schedule.run_pending()
-#         time.sleep(30)
-
-
-#if __name__ == '__main__':
- #   print("Đang chờ schedule chạy...")
-  #  while True:
-   #     schedule.run_pending()
-    #    time.sleep(30)
+# Chạy ngay lập tức để test
+if __name__ == "__main__":
+    auto_like()
