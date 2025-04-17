@@ -1,3 +1,6 @@
+FB_EMAIL = "0877224335"
+FB_PASSWORD = "minhkiet123"
+
 import os
 import time
 from datetime import datetime, timedelta
