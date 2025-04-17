@@ -52,10 +52,20 @@ def auto_like():
     driver.quit()
 
 # Lên lịch chạy 1 lần mỗi ngày lúc 20:00 (cron sẽ trigger Actions)
-schedule.every().day.at("20:00").do(auto_like)
+# schedule.every().day.at("20:00").do(auto_like)
 
-if __name__ == '__main__':
-    print("Đang chờ schedule chạy...")
-    while True:
-        schedule.run_pending()
-        time.sleep(30)
+# Test chạy luôn không cần chờ
+auto_like()
+
+# if __name__ == '__main__':
+#     print("Đang chờ schedule chạy...")
+#     while True:
+#         schedule.run_pending()
+#         time.sleep(30)
+
+
+#if __name__ == '__main__':
+ #   print("Đang chờ schedule chạy...")
+  #  while True:
+   #     schedule.run_pending()
+    #    time.sleep(30)
