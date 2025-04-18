@@ -30,6 +30,13 @@ async def auto_like():
     await page.goto('https://www.facebook.com', {'waitUntil': 'networkidle2'})
     print("Đã đăng nhập bằng cookie!")
 
+    # Đợi thêm trước khi scroll để Facebook load feed
+    await asyncio.sleep(5)
+
+    # Debug: in ra HTML (chỉ 2000 ký tự đầu)
+    html = await page.content()
+    print("Trang HTML sau login:\n", html[:2000])
+
     # Cuộn trang nhiều lần để tải bài viết
     for _ in range(5):
         await page.evaluate('window.scrollBy(0, window.innerHeight)')
