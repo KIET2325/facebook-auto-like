@@ -26,12 +26,17 @@ async def auto_like():
     await page.goto('https://www.facebook.com', {'waitUntil': 'networkidle2'})
     await page.setCookie(*cookies)
 
-    # Reload lại trang để hiển thị newsfeed
+    # Reload lại trang sau khi set cookie để hiển thị newsfeed
     await page.goto('https://www.facebook.com', {'waitUntil': 'networkidle2'})
+
     print("Đã đăng nhập bằng cookie!")
 
-    # Chờ bài viết xuất hiện
-    await page.waitForSelector('div[role="article"]', {'timeout': 15000})
+    # Cuộn trang vài lần để tải thêm bài viết
+    for _ in range(3):
+        await page.evaluate('window.scrollBy(0, window.innerHeight)')
+        await page.waitForTimeout(2000)
+
+    # Lấy danh sách bài viết
     posts = await page.querySelectorAll('div[role="article"]')
     print(f"Tìm thấy {len(posts)} bài viết trong newsfeed.")
 
@@ -39,6 +44,8 @@ async def auto_like():
     for post in posts:
         if count >= 10:
             break
+
+        # Lấy nút Like trong mỗi bài (bỏ qua bình luận)
         like_buttons = await post.xpath('.//div[@aria-label="Thích" or @aria-label="Like"]')
         if like_buttons:
             await like_buttons[0].click()
