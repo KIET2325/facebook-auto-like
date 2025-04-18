@@ -9,9 +9,12 @@ async def auto_like():
     browser = await launch(headless=True,
                            args=['--no-sandbox', '--disable-setuid-sandbox'])
     page = await browser.newPage()
+
+    # Set User-Agent giống Chrome thật
     await page.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
     )
+
     # Chuyển cookie string thành list các dict
     cookies = []
     for item in FB_COOKIE.split(';'):
@@ -32,14 +35,14 @@ async def auto_like():
     await page.goto('https://www.facebook.com', {'waitUntil': 'networkidle2'})
     print("Đã đăng nhập bằng cookie!")
 
-    # Đợi thêm để trang tải đầy đủ
+    # Đợi thêm để trang load
     await asyncio.sleep(5)
 
-    # In ra HTML sau khi đăng nhập (giúp debug)
+    # In HTML để debug
     html = await page.content()
     print("Trang HTML sau login:\n", html[:2000])
 
-    # Cuộn trang nhiều lần để tải bài viết
+    # Cuộn trang để load thêm bài viết
     for _ in range(5):
         await page.evaluate('window.scrollBy(0, window.innerHeight)')
         await asyncio.sleep(2)
@@ -53,7 +56,7 @@ async def auto_like():
         if count >= 10:
             break
 
-        # Kiểm tra nếu trong post có nút Like (bài viết, không phải comment)
+        # Tìm nút Like trong từng bài
         like_buttons = await post.xpath('.//span[contains(text(), "Thích") or contains(text(), "Like")]/ancestor::div[@role="button"]')
         if like_buttons:
             try:
@@ -68,7 +71,7 @@ async def auto_like():
 
     await browser.close()
 
-# Chạy script với xử lý lỗi vòng lặp
+# Chạy script
 try:
     asyncio.run(auto_like())
 except RuntimeError as e:
