@@ -1,17 +1,13 @@
 import asyncio
+import random
 from pyppeteer import launch
 import os
 
-# Lấy cookie từ biến môi trường
-FB_COOKIE = os.environ.get("FB_COOKIE", "")
+FB_COOKIE = os.environ.get("FB_COOKIE")
 
 async def auto_like():
-    # Ép pyppeteer dùng Chrome đã cài
-    browser = await launch(
-        headless=True,
-        executablePath="/usr/bin/google-chrome",
-        args=["--no-sandbox", "--disable-setuid-sandbox"]
-    )
+    browser = await launch(headless=True,
+                           args=['--no-sandbox', '--disable-setuid-sandbox'])
     page = await browser.newPage()
 
     # Chuyển cookie string thành list các dict
@@ -26,27 +22,36 @@ async def auto_like():
                 'path': '/',
             })
 
-    # Vào trang Facebook để set cookie và đăng nhập
-    await page.goto('https://facebook.com', {'waitUntil': 'networkidle2'})
-    if cookies:
-        await page.setCookie(*cookies)
+    # Truy cập Facebook và set cookie
+    await page.goto('https://mbasic.facebook.com', {'waitUntil': 'networkidle2'})
+    await page.setCookie(*cookies)
 
-    # Mở newsfeed và chờ nút Like xuất hiện
-    await page.goto('https://www.facebook.com/', {'waitUntil': 'networkidle2'})
-    await page.waitForSelector('[aria-label="Thích"], [aria-label="Like"]', {'timeout': 10000})
+    # Reload lại trang sau khi set cookie để hiển thị newsfeed
+    await page.goto('https://mbasic.facebook.com', {'waitUntil': 'networkidle2'})
 
     print("Đã đăng nhập bằng cookie!")
 
-    # Like bài viết đầu tiên
-    buttons = await page.querySelectorAll('[aria-label="Thích"], [aria-label="Like"]')
-    if buttons:
-        await buttons[0].click()
-        print("Đã like bài viết đầu tiên.")
-    else:
-        print("Không tìm thấy nút Like.")
+    # Lấy danh sách bài viết (thẻ div có role bài đăng)
+    posts = await page.xpath('//div[contains(@id, "story") and .//a[text()="Thích"]]')
+    print(f"Tìm thấy {len(posts)} bài viết có nút Thích.")
 
-    await asyncio.sleep(2)
+    count = 0
+    for post in posts:
+        if count >= 10:
+            break
+        like_btns = await post.xpath('.//a[text()="Thích"]')
+        if like_btns:
+            await like_btns[0].click()
+            count += 1
+            print(f"Đã like {count} bài viết.")
+            delay = random.randint(5, 10)
+            await page.waitForTimeout(delay * 1000)
+
     await browser.close()
 
-if __name__ == '__main__':
+# Chạy script với xử lý lỗi vòng lặp
+try:
     asyncio.run(auto_like())
+except RuntimeError as e:
+    if str(e) != 'Event loop is closed':
+        raise
