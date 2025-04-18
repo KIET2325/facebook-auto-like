@@ -33,7 +33,7 @@ async def auto_like():
     # Cuộn trang nhiều lần để tải bài viết
     for _ in range(5):
         await page.evaluate('window.scrollBy(0, window.innerHeight)')
-        await page.waitForTimeout(2000)
+        await asyncio.sleep(2)
 
     # Lấy tất cả bài viết
     posts = await page.querySelectorAll('div[role="article"]')
