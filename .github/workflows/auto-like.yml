@@ -27,7 +27,7 @@ jobs:
       - name: Cài thư viện hệ thống cho GUI
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb libxi6 libgconf-2-4
+          sudo apt-get install -y xvfb libxi6
 
       - name: Cài dependencies Python
         run: |
