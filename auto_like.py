@@ -2,17 +2,22 @@ import asyncio
 from pyppeteer import launch
 import os
 
-FB_COOKIE = os.environ.get("FB_COOKIE")
+# Lấy cookie từ biến môi trường
+FB_COOKIE = os.environ.get("FB_COOKIE", "")
 
 async def auto_like():
-    browser = await launch(headless=True,
-                           args=['--no-sandbox', '--disable-setuid-sandbox'])
+    # Ép pyppeteer dùng Chrome đã cài
+    browser = await launch(
+        headless=True,
+        executablePath="/usr/bin/google-chrome",
+        args=["--no-sandbox", "--disable-setuid-sandbox"]
+    )
     page = await browser.newPage()
 
     # Chuyển cookie string thành list các dict
     cookies = []
     for item in FB_COOKIE.split(';'):
-        parts = item.strip().split('=')
+        parts = item.strip().split('=', 1)
         if len(parts) == 2:
             cookies.append({
                 'name': parts[0],
@@ -21,20 +26,21 @@ async def auto_like():
                 'path': '/',
             })
 
-    # Set cookies
-    await page.goto('https://facebook.com')  # Phải vào trước khi set cookies
-    await page.setCookie(*cookies)
+    # Vào trang Facebook để set cookie và đăng nhập
+    await page.goto('https://facebook.com', {'waitUntil': 'networkidle2'})
+    if cookies:
+        await page.setCookie(*cookies)
 
-    # Mở Facebook sau khi set cookie
+    # Mở newsfeed và chờ nút Like xuất hiện
     await page.goto('https://www.facebook.com/', {'waitUntil': 'networkidle2'})
-    await page.waitForSelector('[aria-label="Thích"]', {'timeout': 10000})
+    await page.waitForSelector('[aria-label="Thích"], [aria-label="Like"]', {'timeout': 10000})
 
     print("Đã đăng nhập bằng cookie!")
 
-    # Like post đầu tiên
-    like_buttons = await page.querySelectorAll('[aria-label="Thích"]')
-    if like_buttons:
-        await like_buttons[0].click()
+    # Like bài viết đầu tiên
+    buttons = await page.querySelectorAll('[aria-label="Thích"], [aria-label="Like"]')
+    if buttons:
+        await buttons[0].click()
         print("Đã like bài viết đầu tiên.")
     else:
         print("Không tìm thấy nút Like.")
@@ -42,4 +48,5 @@ async def auto_like():
     await asyncio.sleep(2)
     await browser.close()
 
-asyncio.run(auto_like())
+if __name__ == '__main__':
+    asyncio.run(auto_like())
