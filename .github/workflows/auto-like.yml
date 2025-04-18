@@ -2,7 +2,6 @@ name: Auto Facebook Like
 
 on:
   schedule:
-    # Chạy mỗi ngày lúc 20:00 Asia/Ho_Chi_Minh = 13:00 UTC
     - cron: '0 13 * * *'
   workflow_dispatch:
 
@@ -12,8 +11,7 @@ jobs:
     timeout-minutes: 180
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -25,10 +23,11 @@ jobs:
         with:
           chrome-version: 'latest'
 
+      # → Thay đổi ở đây:
       - name: Cài Chromedriver
-        uses: nanasess/setup-chromedriver@v1
+        uses: actions/setup-chromedriver@v3
         with:
-          version: 'latest'
+          chromedriver-version: 'latest'
 
       - name: Cài dependencies Python
         run: |
