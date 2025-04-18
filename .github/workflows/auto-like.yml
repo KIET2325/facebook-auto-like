@@ -1,46 +1,32 @@
-name: Auto Facebook Like
+name: Facebook AutoLike
 
 on:
   schedule:
-    # Chạy mỗi ngày lúc 20:00 Asia/Ho_Chi_Minh = 13:00 UTC
-    - cron: '0 13 * * *'
-  workflow_dispatch:  # cho phép trigger thủ công
+    - cron: '30 3 * * *'  # Chạy mỗi ngày 10:30 (GMT+7)
+  workflow_dispatch:      # Cho phép chạy thủ công
 
 jobs:
-  auto-like:
+  like_job:
     runs-on: ubuntu-latest
-    timeout-minutes: 180  # cho phép chạy tối đa 3 giờ
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v3
         with:
-          python-version: '3.10'
+          node-version: 18
 
-      - name: Cài Google Chrome và thư viện cần thiết
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chrome
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget unzip xvfb libxi6 libgconf-2-4
-          # Cài Chrome
-          wget -q -O google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo dpkg -i google-chrome.deb || sudo apt-get -f install -y
-      - name: Cài Chromedriver
-        uses: nanasess/setup-chromedriver@v1
-        with:
-          version: 'latest'
+          sudo apt-get install -y google-chrome-stable
 
-      - name: Cài dependencies Python
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Chạy script Auto Like
+      - name: Run auto-like bot
+        run: npm start
         env:
-          FB_EMAIL: ${{ secrets.FB_EMAIL }}
-          FB_PASSWORD: ${{ secrets.FB_PASSWORD }}
-        run: |
-          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
-            python auto_like.py
+          FB_COOKIE: ${{ secrets.FB_COOKIE }}
