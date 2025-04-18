@@ -28,15 +28,14 @@ async def auto_like():
 
     # Reload lại trang sau khi set cookie để hiển thị newsfeed
     await page.goto('https://www.facebook.com', {'waitUntil': 'networkidle2'})
-
     print("Đã đăng nhập bằng cookie!")
 
-    # Cuộn trang vài lần để tải thêm bài viết
-    for _ in range(3):
+    # Cuộn trang nhiều lần để tải bài viết
+    for _ in range(5):
         await page.evaluate('window.scrollBy(0, window.innerHeight)')
         await page.waitForTimeout(2000)
 
-    # Lấy danh sách bài viết
+    # Lấy tất cả bài viết
     posts = await page.querySelectorAll('div[role="article"]')
     print(f"Tìm thấy {len(posts)} bài viết trong newsfeed.")
 
@@ -45,14 +44,18 @@ async def auto_like():
         if count >= 10:
             break
 
-        # Lấy nút Like trong mỗi bài (bỏ qua bình luận)
-        like_buttons = await post.xpath('.//div[@aria-label="Thích" or @aria-label="Like"]')
+        # Kiểm tra nếu trong post có nút Like (bài viết, không phải comment)
+        like_buttons = await post.xpath('.//span[contains(text(), "Thích") or contains(text(), "Like")]/ancestor::div[@role="button"]')
         if like_buttons:
-            await like_buttons[0].click()
-            count += 1
-            print(f"Đã like {count} bài viết.")
-            delay = random.randint(5, 10)
-            await page.waitForTimeout(delay * 1000)
+            try:
+                await like_buttons[0].click()
+                count += 1
+                print(f"Đã like {count} bài viết.")
+                delay = random.randint(5, 10)
+                await page.waitForTimeout(delay * 1000)
+            except Exception as e:
+                print(f"Lỗi khi like: {e}")
+                continue
 
     await browser.close()
 
