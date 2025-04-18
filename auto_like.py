@@ -23,25 +23,25 @@ async def auto_like():
             })
 
     # Truy cập Facebook và set cookie
-    await page.goto('https://mbasic.facebook.com', {'waitUntil': 'networkidle2'})
+    await page.goto('https://www.facebook.com', {'waitUntil': 'networkidle2'})
     await page.setCookie(*cookies)
 
-    # Reload lại trang sau khi set cookie để hiển thị newsfeed
-    await page.goto('https://mbasic.facebook.com', {'waitUntil': 'networkidle2'})
-
+    # Reload lại trang để hiển thị newsfeed
+    await page.goto('https://www.facebook.com', {'waitUntil': 'networkidle2'})
     print("Đã đăng nhập bằng cookie!")
 
-    # Lấy danh sách bài viết (thẻ div có role bài đăng)
-    posts = await page.xpath('//div[contains(@id, "story") and .//a[text()="Thích"]]')
-    print(f"Tìm thấy {len(posts)} bài viết có nút Thích.")
+    # Chờ bài viết xuất hiện
+    await page.waitForSelector('div[role="article"]', {'timeout': 15000})
+    posts = await page.querySelectorAll('div[role="article"]')
+    print(f"Tìm thấy {len(posts)} bài viết trong newsfeed.")
 
     count = 0
     for post in posts:
         if count >= 10:
             break
-        like_btns = await post.xpath('.//a[text()="Thích"]')
-        if like_btns:
-            await like_btns[0].click()
+        like_buttons = await post.xpath('.//div[@aria-label="Thích" or @aria-label="Like"]')
+        if like_buttons:
+            await like_buttons[0].click()
             count += 1
             print(f"Đã like {count} bài viết.")
             delay = random.randint(5, 10)
