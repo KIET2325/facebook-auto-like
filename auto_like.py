@@ -52,7 +52,7 @@ async def auto_like():
                 count += 1
                 print(f"Đã like {count} bài viết.")
                 delay = random.randint(5, 10)
-                await page.waitForTimeout(delay * 1000)
+                await asyncio.sleep(delay)
             except Exception as e:
                 print(f"Lỗi khi like: {e}")
                 continue
