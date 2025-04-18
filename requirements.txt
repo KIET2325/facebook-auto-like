@@ -1,4 +1,2 @@
--selenium
- schedule
--pyppeteer==1.0.2
-+pyppeteer==1.0.2
+schedule
+pyppeteer==1.0.2
